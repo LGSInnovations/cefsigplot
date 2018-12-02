@@ -1,0 +1,11 @@
+{
+  "name": "cefsigplot",
+  "version": "1.0.0",
+  "description": "CEF SigPlot",
+  "dependencies": {
+    "sigplot": "^2.0.0-rc8"
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.1.2"
+  }
+}
