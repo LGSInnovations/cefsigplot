@@ -6,6 +6,7 @@
 
 #include <sstream>
 #include <string>
+#include <iostream>
 
 #include "include/base/cef_bind.h"
 #include "include/cef_app.h"
@@ -59,6 +60,33 @@ void SigPlotHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
 
   // Add to the list of existing browsers.
   browser_list_.push_back(browser);
+
+}
+
+void SigPlotHandler::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode) {
+  CEF_REQUIRE_UI_THREAD();
+
+  CefRefPtr<CefCommandLine> command_line =
+      CefCommandLine::GetGlobalCommandLine();
+
+  CefCommandLine::ArgumentList args;
+  command_line->GetArguments(args);
+
+  std::vector<CefString>::iterator it;
+  for (it = args.begin(); it != args.end(); it++) {
+    std::cout << it->ToString() << std::endl;
+
+    std::string full_path = realpath(it->ToString().c_str(), NULL);
+    std::string url = "file://" + full_path;
+    std::string js = "window.overlay_href('" + url + "');";
+
+    frame->ExecuteJavaScript(
+      js,
+      frame->GetURL(),
+      0
+    );
+
+  }
 }
 
 bool SigPlotHandler::DoClose(CefRefPtr<CefBrowser> browser) {

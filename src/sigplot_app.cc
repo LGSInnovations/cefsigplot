@@ -57,6 +57,10 @@ class SigPlotWindowDelegate : public CefWindowDelegate {
 
 SigPlotApp::SigPlotApp() {}
 
+void SigPlotApp::OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) {
+  command_line->AppendSwitch("disable-web-security");
+}
+
 void SigPlotApp::OnContextInitialized() {
   CEF_REQUIRE_UI_THREAD();
 
@@ -81,20 +85,15 @@ void SigPlotApp::OnContextInitialized() {
 
   std::string url;
 
-  // TODO remove support for --url
-  //
-  // Check if a "--url=" value was provided via the command-line. If so, use
-  // that instead of the default URL.
-  url = command_line->GetSwitchValue("url");
-  if (url.empty()) {
-    std::string prog = command_line->GetProgram().ToString();
-    // KLUDGE TO FIND FOLDER RELATIVE TO APP
-    size_t found = prog.find_last_of("/\\");
-    std::string mydir = prog.substr(0, found);
-    std::string sigplot = mydir + "/app/app.html";
-    std::string full_path = realpath(sigplot.c_str(), NULL);
-    url = "file://" + full_path;
-  }
+  // Get the program path
+  std::string prog = command_line->GetProgram().ToString();
+  // KLUDGE TO FIND FOLDER RELATIVE TO APP, MAKE THIS MORE PORTABLE
+  // PERHAPS WITH BOOST
+  size_t found = prog.find_last_of("/\\");
+  std::string mydir = prog.substr(0, found);
+  std::string sigplot = mydir + "/app/app.html";
+  std::string full_path = realpath(sigplot.c_str(), NULL);
+  url = "file://" + full_path;
 
   if (use_views) {
     // Create the BrowserView.
@@ -103,6 +102,7 @@ void SigPlotApp::OnContextInitialized() {
 
     // Create the Window. It will show itself after creation.
     CefWindow::CreateTopLevelWindow(new SigPlotWindowDelegate(browser_view));
+
   } else {
     // Information used when creating the native window.
     CefWindowInfo window_info;
